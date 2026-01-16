@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Country Analysis - Global GDP Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🌍 Country Analysis</h2>
+    <p>Analyze and compare countries by selected metrics</p>
+</div>
+
+<div class="section">
+    <div class="controls">
+        <label for="metricSelect">Select Metric:</label>
+        <select id="metricSelect">
+            <option value="">Loading metrics...</option>
+        </select>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Statistics for <span id="selectedMetric">Selected Metric</span></h3>
+    <div class="metrics-grid" id="statsGrid">
+        <div class="metric-card">
+            <div class="metric-label">Mean</div>
+            <div class="metric-value" id="meanValue">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Median</div>
+            <div class="metric-value" id="medianValue">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Min</div>
+            <div class="metric-value" id="minValue">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Max</div>
+            <div class="metric-value" id="maxValue">-</div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Distribution Chart</h3>
+    <div id="distributionChart" class="chart-container"></div>
+</div>
+
+<div class="section">
+    <h3>Top 10 Values</h3>
+    <div class="table-responsive">
+        <table class="data-table" id="topValuesTable">
+            <thead>
+                <tr><th>Loading...</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Select a metric to view</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMetrics();
+    document.getElementById('metricSelect').addEventListener('change', updateAnalysis);
+});
+
+function loadMetrics() {
+    fetch('/api/numeric-columns')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('metricSelect');
+            select.innerHTML = data.columns.map(col => 
+                `<option value="${col}">${col}</option>`
+            ).join('');
+            if (data.columns.length > 0) {
+                select.value = data.columns[0];
+                updateAnalysis();
+            }
+        });
+}
+
+function updateAnalysis() {
+    const metric = document.getElementById('metricSelect').value;
+    if (!metric) return;
+    
+    document.getElementById('selectedMetric').textContent = metric;
+    
+    // Load statistics
+    fetch(`/api/metric-stats?metric=${encodeURIComponent(metric)}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('meanValue').textContent = data.mean.toFixed(2);
+            document.getElementById('medianValue').textContent = data.median.toFixed(2);
+            document.getElementById('minValue').textContent = data.min.toFixed(2);
+            document.getElementById('maxValue').textContent = data.max.toFixed(2);
+        });
+    
+    // Load distribution chart
+    fetch(`/api/distribution-chart?metric=${encodeURIComponent(metric)}`)
+        .then(response => response.json())
+        .then(data => {
+            Plotly.newPlot('distributionChart', data.data, data.layout, {responsive: true});
+        });
+    
+    // Load top values
+    fetch(`/api/top-values?metric=${encodeURIComponent(metric)}&n=10`)
+        .then(response => response.json())
+        .then(data => populateTopValuesTable(data.data, metric))
+        .catch(error => console.error('Error:', error));
+}
+
+function populateTopValuesTable(data, metric) {
+    if (data.length === 0) {
+        document.getElementById('topValuesTable').innerHTML = 
+            '<tr><td>No data available</td></tr>';
+        return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const thead = document.querySelector('#topValuesTable thead tr');
+    thead.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+    
+    const tbody = document.querySelector('#topValuesTable tbody');
+    tbody.innerHTML = data.map(row => 
+        `<tr>${headers.map(h => `<td>${row[h]}</td>`).join('')}</tr>`
+    ).join('');
+}
+</script>
+{% endblock %}

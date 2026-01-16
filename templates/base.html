@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Global GDP Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>🌍 Global GDP Dashboard</h1>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="/">📈 Overview</a></li>
+                <li><a href="/country">🌍 Country Analysis</a></li>
+                <li><a href="/trends">📊 Growth Trends</a></li>
+                <li><a href="/forecasting">📮 Forecasting</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        <!-- Page content goes here -->
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Global GDP Dashboard | World Bank & UN Data</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}
+    <!-- Page-specific scripts go here -->
+    {% endblock %}
+</body>
+</html>

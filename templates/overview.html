@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Overview - Global GDP Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📈 Dashboard Overview</h2>
+    <p>Key metrics and data preview</p>
+</div>
+
+<div class="metrics-grid" id="metricsGrid">
+    <div class="metric-card">
+        <div class="metric-label">Total Records</div>
+        <div class="metric-value" id="totalRecords">{{ rows }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Data Columns</div>
+        <div class="metric-value" id="totalColumns">{{ cols }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Average Value</div>
+        <div class="metric-value" id="avgValue">Loading...</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Max Value</div>
+        <div class="metric-value" id="maxValue">Loading...</div>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Data Preview</h3>
+    <div class="table-responsive">
+        <table class="data-table" id="previewTable">
+            <thead>
+                <tr>
+                    <th>Loading...</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Data Statistics</h3>
+    <div class="table-responsive">
+        <table class="data-table" id="statsTable">
+            <thead>
+                <tr>
+                    <th>Loading...</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Loading statistics...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Column Information</h3>
+    <div class="table-responsive">
+        <table class="data-table" id="columnTable">
+            <thead>
+                <tr>
+                    <th>Column</th>
+                    <th>Data Type</th>
+                    <th>Non-Null</th>
+                    <th>Null</th>
+                </tr>
+            </thead>
+            <tbody id="columnBody">
+                <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadOverviewData();
+});
+
+function loadOverviewData() {
+    // Load stats
+    fetch('/api/overview-stats')
+        .then(response => response.json())
+        .then(data => {
+            const numeric_cols = Object.keys(data.stats);
+            if (numeric_cols.length > 0) {
+                const firstCol = numeric_cols[0];
+                document.getElementById('avgValue').textContent = data.stats[firstCol].mean.toFixed(2);
+                document.getElementById('maxValue').textContent = data.stats[firstCol].max.toFixed(2);
+            }
+        });
+    
+    // Load preview
+    fetch('/api/data-preview')
+        .then(response => response.json())
+        .then(data => populatePreviewTable(data.data))
+        .catch(error => console.error('Error:', error));
+    
+    // Load description
+    fetch('/api/data-description')
+        .then(response => response.json())
+        .then(data => populateStatsTable(data))
+        .catch(error => console.error('Error:', error));
+    
+    // Load column info
+    fetch('/api/column-info')
+        .then(response => response.json())
+        .then(data => populateColumnTable(data.columns))
+        .catch(error => console.error('Error:', error));
+}
+
+function populatePreviewTable(data) {
+    if (data.length === 0) return;
+    
+    const headers = Object.keys(data[0]);
+    const thead = document.querySelector('#previewTable thead tr');
+    thead.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+    
+    const tbody = document.querySelector('#previewTable tbody');
+    tbody.innerHTML = data.map(row => 
+        `<tr>${headers.map(h => `<td>${row[h]}</td>`).join('')}</tr>`
+    ).join('');
+}
+
+function populateStatsTable(stats) {
+    const keys = Object.keys(stats);
+    if (keys.length === 0) return;
+    
+    const thead = document.querySelector('#statsTable thead tr');
+    thead.innerHTML = `<th>Statistic</th>${keys.map(k => `<th>${k}</th>`).join('')}`;
+    
+    const tbody = document.querySelector('#statsTable tbody');
+    const rows = Object.keys(stats[keys[0]]);
+    tbody.innerHTML = rows.map(row => 
+        `<tr><td>${row}</td>${keys.map(k => `<td>${parseFloat(stats[k][row]).toFixed(2)}</td>`).join('')}</tr>`
+    ).join('');
+}
+
+function populateColumnTable(columns) {
+    const tbody = document.getElementById('columnBody');
+    tbody.innerHTML = columns.map(col => 
+        `<tr>
+            <td>${col.name}</td>
+            <td>${col.dtype}</td>
+            <td>${col.non_null}</td>
+            <td>${col.null}</td>
+        </tr>`
+    ).join('');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Growth Trends - Global GDP Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📊 Growth Trends Analysis</h2>
+    <p>Analyze trends and correlations in the data</p>
+</div>
+
+<div class="section">
+    <div class="controls">
+        <label for="trendColumn">Select Column for Trend Analysis:</label>
+        <select id="trendColumn">
+            <option value="">Loading columns...</option>
+        </select>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Trend Chart</h3>
+    <div id="trendChart" class="chart-container"></div>
+</div>
+
+<div class="section">
+    <h3>Correlation Matrix</h3>
+    <div id="correlationChart" class="chart-container"></div>
+</div>
+
+<div id="noCorrelationMessage" style="display: none;" class="message info">
+    <p>Need at least 2 numeric columns to display correlation matrix</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadColumns();
+    document.getElementById('trendColumn').addEventListener('change', updateTrendAnalysis);
+});
+
+function loadColumns() {
+    fetch('/api/numeric-columns')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('trendColumn');
+            select.innerHTML = data.columns.map(col => 
+                `<option value="${col}">${col}</option>`
+            ).join('');
+            if (data.columns.length > 0) {
+                select.value = data.columns[0];
+                updateTrendAnalysis();
+            }
+        });
+}
+
+function updateTrendAnalysis() {
+    const column = document.getElementById('trendColumn').value;
+    if (!column) return;
+    
+    // Load box plot
+    fetch(`/api/box-plot?column=${encodeURIComponent(column)}`)
+        .then(response => response.json())
+        .then(data => {
+            Plotly.newPlot('trendChart', data.data, data.layout, {responsive: true});
+        })
+        .catch(error => {
+            document.getElementById('trendChart').innerHTML = 
+                '<p style="color: red;">Error loading trend chart</p>';
+        });
+    
+    // Load correlation matrix
+    loadCorrelationMatrix();
+}
+
+function loadCorrelationMatrix() {
+    fetch('/api/correlation-matrix')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('noCorrelationMessage').style.display = 'none';
+            Plotly.newPlot('correlationChart', data.data, data.layout, {responsive: true});
+        })
+        .catch(error => {
+            document.getElementById('noCorrelationMessage').style.display = 'block';
+            document.getElementById('correlationChart').innerHTML = '';
+        });
+}
+</script>
+{% endblock %}

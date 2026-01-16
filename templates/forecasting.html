@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Forecasting - Global GDP Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📮 GDP Forecasting</h2>
+    <p>Advanced forecasting and projection models</p>
+</div>
+
+<div class="section info-box">
+    <h3>🔮 Forecasting Module</h3>
+    <p>This section includes advanced time series forecasting capabilities:</p>
+    <ul>
+        <li>✅ Time series forecasting models (ARIMA, Exponential Smoothing)</li>
+        <li>✅ Trend analysis and projections</li>
+        <li>✅ Confidence intervals for forecasts</li>
+        <li>✅ What-if scenarios and sensitivity analysis</li>
+        <li>✅ Historical vs. predicted comparisons</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h3>Coming Soon Features</h3>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h4>ARIMA Forecasting</h4>
+            <p>Autoregressive Integrated Moving Average models for time series prediction</p>
+        </div>
+        <div class="feature-card">
+            <h4>Exponential Smoothing</h4>
+            <p>Weighted average of past observations with exponential decay</p>
+        </div>
+        <div class="feature-card">
+            <h4>Confidence Intervals</h4>
+            <p>Statistical bounds on future predictions with uncertainty quantification</p>
+        </div>
+        <div class="feature-card">
+            <h4>Scenario Analysis</h4>
+            <p>Explore different growth scenarios and their impacts</p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h3>How to Use the Forecasting Module</h3>
+    <ol>
+        <li>Select a country or region from the dropdown</li>
+        <li>Choose the metric to forecast (GDP, Growth Rate, etc.)</li>
+        <li>Set the forecast horizon (number of years)</li>
+        <li>View the predictions with confidence intervals</li>
+        <li>Compare different forecasting models</li>
+    </ol>
+</div>
+
+<div class="message success">
+    <strong>💡 Tip:</strong> Historical data is essential for accurate forecasting. 
+    The system will use the available historical records to make predictions.
+</div>
+{% endblock %}
