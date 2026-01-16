@@ -368,3 +368,99 @@ For issues, questions, or suggestions:
 **Created**: January 2026
 **Last Updated**: January 2026
 **Version**: 1.0.0
+
+
+## ⚡ Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Ganatra-Ruchir/new.git
+cd new
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Running the Dashboard
+
+```bash
+# Launch the Flask application
+python flask_app.py
+
+# Access the dashboard
+# Open your browser and navigate to: http://localhost:5000
+```
+
+### Data Setup
+
+1. Place your Global GDP CSV file in `data/raw/global_gdp.csv`
+2. Ensure the CSV contains columns: Country, Year, GDP (or similar naming)
+3. Run the data processing notebooks in order:
+   - `notebooks/01_data_exploration.ipynb`
+   - `notebooks/02_data_cleaning.ipynb`
+   - `notebooks/03_feature_engineering.ipynb`
+4. Refresh your browser to see updated visualizations
+
+---
+
+## 📊 Example Usage
+
+```python
+import pandas as pd
+from src.data.load_data import load_processed_data
+from src.analysis.gdp_trends import calculate_growth_rate
+
+# Load processed data
+df = load_processed_data()
+
+# Calculate growth rates
+growth = calculate_growth_rate(df, 'GDP')
+print(growth.head())
+```
+
+---
+
+## 🎯 Key Metrics Tracked
+
+- **GDP Growth Rate**: Year-over-year percentage change
+- **Market Share**: Country's GDP as percentage of global GDP
+- **Growth Forecasts**: Predictive models for future GDP values
+- **Trend Analysis**: Moving averages and trend identification
+- **Global Rankings**: Country positioning by economic size
+
+---
+
+## 💡 Why This Project Stands Out
+
+✨ **Production-Ready Code** - Built with industry best practices
+✨ **Comprehensive Documentation** - Detailed guides and examples
+✨ **Professional UI/UX** - Interactive and intuitive dashboard
+✨ **Data-Driven Insights** - Advanced analytics and forecasting
+✨ **Scalable Architecture** - Easy to extend with new features
+✨ **Real-World Data** - Integrated with World Bank and UN sources
+
+---
+
+## 🔗 Quick Links
+
+- [Project GitHub](https://github.com/Ganatra-Ruchir/new)
+- [World Bank Data](https://data.worldbank.org/)
+- [UN Data Portal](http://data.un.org/)
+- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Plotly Interactive Visualization](https://plotly.com/python/)
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+---
+
+**Made with ❤️ for data analysis enthusiasts**
