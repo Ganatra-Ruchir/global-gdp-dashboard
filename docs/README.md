@@ -1,4 +1,40 @@
-# Global GDP Dashboard
+# 📊 Global GDP Dashboard
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-Latest-green)](https://flask.palletsprojects.com/)
+[![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue)](https://pandas.pydata.org/)
+[![Plotly](https://img.shields.io/badge/Plotly-Visualization-brightgreen)](https://plotly.com/python/)
+[![Status](https://img.shields.io/badge/Status-Active-green)]()
+[![Last Commit](https://img.shields.io/github/last-commit/Ganatra-Ruchir/new)]()
+
+> 🚀 Professional-grade interactive data analysis and visualization dashboard for exploring Global GDP trends, forecasting, and country comparisons using World Bank and UN data sources.
+
+---
+
+## 📈 Project Overview
+
+This comprehensive dashboard application provides advanced analytics and visualization capabilities for analyzing global economic indicators. Built with modern web technologies and data science libraries, it enables users to:
+
+- 📊 **Visualize** Global GDP trends across countries and time periods
+- 🔍 **Analyze** Economic patterns and country comparisons  
+- 🎯 **Forecast** Future GDP trends using statistical models
+- 💡 **Extract** Actionable insights from World Bank and UN datasets
+
+---
+
+## 🎨 Dashboard Preview
+
+### Key Features at a Glance:
+- **Interactive Charts** - Drill down into data with hover details and zoom capabilities
+- **Real-time Filtering** - Dynamic country and metric selection
+- **Trend Analysis** - Historical patterns and growth rate calculations
+- **Forecasting Engine** - Predictive models for economic projections
+- **Professional UI** - Clean, responsive design optimized for insights
+
+---
+
+lobal GDP Dashboard
 
 An interactive data analysis and visualization dashboard for exploring Global GDP trends from World Bank and UN data sources.
 
