@@ -3,7 +3,7 @@ Global GDP Dashboard - Flask Web Application
 Interactive dashboard with HTML/CSS/JavaScript frontend
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory, redirect
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -14,7 +14,7 @@ import numpy as np
 
 # Add src to path
 app_dir = Path(__file__).parent
-project_root = app_dir.parent
+project_root = app_dir
 sys.path.insert(0, str(project_root / 'src'))
 
 # Initialize Flask app
@@ -24,6 +24,15 @@ app.config['JSON_SORT_KEYS'] = False
 # Global data variable
 df = None
 
+def normalize_data(frame):
+    """Parse the supplied snapshot; preserve missing cells instead of zero-filling."""
+    frame = frame.loc[:, ~frame.columns.str.startswith('Unnamed:')].copy()
+    for column in ['GDP (nominal, 2023)', 'GDP Growth', 'Population 2023', 'GDP per capita', 'Share of World GDP']:
+        if column in frame:
+            cleaned = frame[column].astype(str).str.replace('−', '-', regex=False).str.replace(r'[$,%]', '', regex=True)
+            frame[column] = pd.to_numeric(cleaned, errors='coerce')
+    return frame
+
 def load_data():
     """Load and cache data"""
     global df
@@ -31,19 +40,19 @@ def load_data():
         # Try processed data first
         processed_path = project_root / 'data' / 'processed' / 'feature_engineered_gdp.csv'
         if processed_path.exists():
-            df = pd.read_csv(processed_path)
+            df = normalize_data(pd.read_csv(processed_path))
             return True
         else:
             # Fall back to raw data
             raw_path = project_root / 'data' / 'raw' / 'global_gdp.csv'
             if raw_path.exists():
-                df = pd.read_csv(raw_path)
+                df = normalize_data(pd.read_csv(raw_path))
                 return True
             else:
                 # Try data folder directly
                 data_path = app_dir / 'data' / 'Global GDP Explorer 2025 (World Bank  UN Data).csv'
                 if data_path.exists():
-                    df = pd.read_csv(data_path)
+                    df = normalize_data(pd.read_csv(data_path))
                     return True
     except Exception as e:
         print(f"Error loading data: {str(e)}")
@@ -68,24 +77,22 @@ def index():
     if df is None:
         return "Error: Data not loaded", 500
     
-    return render_template('overview.html',
-                         rows=len(df),
-                         cols=len(df.columns))
+    return send_from_directory(app_dir, 'index.html')
 
 @app.route('/country')
 def country_analysis():
     """Country analysis page"""
-    return render_template('country_analysis.html')
+    return redirect('/#workspace')
 
 @app.route('/trends')
 def growth_trends():
     """Growth trends page"""
-    return render_template('growth_trends.html')
+    return redirect('/?metric=growth#workspace')
 
 @app.route('/forecasting')
 def forecasting():
     """Forecasting page"""
-    return render_template('forecasting.html')
+    return redirect('/#scenario')
 
 # API Routes
 @app.route('/api/overview-stats')
@@ -159,7 +166,7 @@ def api_metric_stats():
         return jsonify({'error': 'Data not loaded'}), 500
     
     metric = request.args.get('metric')
-    if not metric or metric not in df.columns:
+    if not metric or metric not in get_numeric_cols():
         return jsonify({'error': 'Invalid metric'}), 400
     
     col_data = df[metric].dropna()
@@ -182,7 +189,7 @@ def api_distribution_chart():
         return jsonify({'error': 'Data not loaded'}), 500
     
     metric = request.args.get('metric')
-    if not metric or metric not in df.columns:
+    if not metric or metric not in get_numeric_cols():
         return jsonify({'error': 'Invalid metric'}), 400
     
     col_data = df[metric].dropna()
@@ -199,9 +206,14 @@ def api_top_values():
         return jsonify({'error': 'Data not loaded'}), 500
     
     metric = request.args.get('metric')
-    n = int(request.args.get('n', 10))
+    try:
+        n = int(request.args.get('n', 10))
+        if not 1 <= n <= 250:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({'error': 'n must be an integer from 1 to 250'}), 400
     
-    if not metric or metric not in df.columns:
+    if not metric or metric not in get_numeric_cols():
         return jsonify({'error': 'Invalid metric'}), 400
     
     # Try to get country/entity column
@@ -228,7 +240,7 @@ def api_box_plot():
         return jsonify({'error': 'Data not loaded'}), 500
     
     column = request.args.get('column')
-    if not column or column not in df.columns:
+    if not column or column not in get_numeric_cols():
         return jsonify({'error': 'Invalid column'}), 400
     
     col_data = df[column].dropna()
@@ -264,11 +276,26 @@ def api_correlation_matrix():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return jsonify({'error': 'Page not found'}), 404
 
 @app.errorhandler(500)
 def server_error(e):
-    return render_template('500.html'), 500
+    return jsonify({'error': 'Unable to complete this request'}), 500
+
+@app.route('/<name>')
+def explorer_asset(name):
+    if name not in {'analytics.css', 'analytics-core.js', 'data.js', 'app.js'}:
+        return jsonify({'error': 'Page not found'}), 404
+    return send_from_directory(app_dir, name)
+
+
+@app.route('/api/health')
+def health():
+    return jsonify({'ready': df is not None, 'rows': len(df) if df is not None else 0}), 200 if df is not None else 503
+
+
+# Importing under a WSGI server must initialize the dataset too.
+load_data()
 
 # Main
 if __name__ == '__main__':
@@ -276,7 +303,7 @@ if __name__ == '__main__':
     if load_data():
         print(f"✓ Data loaded successfully! Shape: {df.shape}")
         print(f"✓ Starting Flask app on http://localhost:5000")
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=False, host='127.0.0.1', port=5000)
     else:
         print("✗ Failed to load data!")
         sys.exit(1)
